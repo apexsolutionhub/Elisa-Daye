@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Menu, X, Instagram, Youtube, Music2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 interface NavbarProps {
@@ -76,7 +77,18 @@ export const Navbar = ({ activeSection }: NavbarProps) => {
           </Button>
           <div className="flex gap-6 mt-10">
             <Instagram className="text-muted-foreground hover:text-[#E1306C]" />
-            <Youtube className="text-muted-foreground hover:text-[#FF0000]" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  className="opacity-50 cursor-not-allowed"
+                  aria-disabled="true"
+                  aria-label="YouTube - Coming Soon"
+                >
+                  <Youtube className="text-muted-foreground" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>Coming Soon</TooltipContent>
+            </Tooltip>
             <Music2 className="text-muted-foreground hover:text-[#FE2C55]" />
           </div>
         </div>

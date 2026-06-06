@@ -1,15 +1,51 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Phone, Mail, MessageSquare, Send, Music2 } from 'lucide-react';
+import { Phone, Mail, Send, Music2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 
+const CONTACT_EMAIL = 'alemudaniel44@gmail.com';
+
 export const Contact = () => {
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast.success("Message sent! We'll get back to you shortly.");
-    (e.target as HTMLFormElement).reset();
+    setIsSubmitting(true);
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const message = formData.get('message') as string;
+
+    try {
+      const response = await fetch(`https://formsubmit.co/ajax/${CONTACT_EMAIL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          message,
+          _subject: `New inquiry from ${name}`,
+          _template: 'table',
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to send');
+
+      toast.success("Message sent! We'll get back to you shortly.");
+      form.reset();
+    } catch {
+      toast.error('Failed to send message. Please try again or email us directly.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -45,15 +81,15 @@ export const Contact = () => {
                   <div className="text-xl font-bold">Follow Elisa & Daye</div>
                 </div>
               </a>
-              <div className="flex items-center gap-6 p-6 rounded-2xl bg-muted/50 border border-border">
-                <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-500">
+              <a href="mailto:alemudaniel44@gmail.com" className="flex items-center gap-6 p-6 rounded-2xl bg-muted/50 border border-border hover:border-[#FE2C55] transition-colors group">
+                <div className="w-12 h-12 bg-[#FE2C55]/10 rounded-full flex items-center justify-center text-[#FE2C55] group-hover:bg-[#FE2C55] group-hover:text-white transition-all">
                   <Mail size={24} />
                 </div>
                 <div>
                   <div className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Email</div>
-                  <div className="text-xl font-bold">contact@elisadaye.com</div>
+                  <div className="text-xl font-bold">alemudaniel44@gmail.com</div>
                 </div>
-              </div>
+              </a>
             </div>
           </motion.div>
 
@@ -69,20 +105,20 @@ export const Contact = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Full Name</label>
-                  <Input required placeholder="John Doe" className="h-14 bg-muted/30 border-none focus-visible:ring-2 focus-visible:ring-primary" />
+                  <label htmlFor="contact-name" className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Full Name</label>
+                  <Input id="contact-name" name="name" required placeholder="John Doe" disabled={isSubmitting} className="h-14 bg-muted/30 border-none focus-visible:ring-2 focus-visible:ring-primary" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Email Address</label>
-                  <Input required type="email" placeholder="john@example.com" className="h-14 bg-muted/30 border-none focus-visible:ring-2 focus-visible:ring-primary" />
+                  <label htmlFor="contact-email" className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Email Address</label>
+                  <Input id="contact-email" name="email" required type="email" placeholder="john@example.com" disabled={isSubmitting} className="h-14 bg-muted/30 border-none focus-visible:ring-2 focus-visible:ring-primary" />
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Project Details</label>
-                <Textarea required placeholder="Tell us about your brand and promotion goals..." className="min-h-[160px] bg-muted/30 border-none focus-visible:ring-2 focus-visible:ring-primary resize-none p-4" />
+                <label htmlFor="contact-message" className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Project Details</label>
+                <Textarea id="contact-message" name="message" required placeholder="Tell us about your brand and promotion goals..." disabled={isSubmitting} className="min-h-[160px] bg-muted/30 border-none focus-visible:ring-2 focus-visible:ring-primary resize-none p-4" />
               </div>
-              <Button type="submit" className="w-full h-14 rounded-full text-lg font-bold group bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/20 transition-all">
-                Send Inquiry
+              <Button type="submit" disabled={isSubmitting} className="w-full h-14 rounded-full text-lg font-bold group bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/20 transition-all disabled:opacity-70">
+                {isSubmitting ? 'Sending...' : 'Send Inquiry'}
                 <Send className="ml-2 w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
               </Button>
             </form>
